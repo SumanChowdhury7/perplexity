@@ -1,7 +1,41 @@
-import React from "react";
-import { Link } from 'react-router'
+import React, { useState } from 'react'
+import { data, Link, useNavigate } from 'react-router'
+import { useAuth } from '../hook/useAuth'
+import { useSelector } from 'react-redux'
+import { Navigate } from 'react-router'
 
 const Register = () => {
+  const [username, setUsername] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  
+  const user = useSelector((state) => state.auth.user);
+  const loading = useSelector((state) => state.auth.loading);
+  
+  const { handleRegister } = useAuth();
+  
+  const navigate = useNavigate();
+  
+  
+  async function handleSubmit(e) {
+    e.preventDefault();
+    
+    const payload = {
+      username,
+      email,
+      password
+    };
+    await handleRegister(username, email, password);
+  
+    
+      navigate("/login");
+    
+    
+  }
+  
+  if(!loading && user) {
+    return <Navigate to="/" replace />
+  }
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-950 relative overflow-hidden">
 
@@ -15,7 +49,7 @@ const Register = () => {
 
         <p className="text-gray-400 text-center mb-8">Sign up to get started</p>
 
-        <form className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-5">
   
           <div>
             <label className="text-gray-300 text-sm">Username</label>
@@ -23,6 +57,8 @@ const Register = () => {
               type="text"
               placeholder="Enter your username"
               className="mt-1 w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:border-purple-500 focus:ring-2 focus:ring-purple-600 outline-none transition"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
             />
           </div>
 
@@ -32,6 +68,8 @@ const Register = () => {
               type="email"
               placeholder="Enter your email"
               className="mt-1 w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:border-purple-500 focus:ring-2 focus:ring-purple-600 outline-none transition"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
           </div>
 
@@ -41,6 +79,8 @@ const Register = () => {
               type="password"
               placeholder="Create a password"
               className="mt-1 w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:border-purple-500 focus:ring-2 focus:ring-purple-600 outline-none transition"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
             />
           </div>
 
