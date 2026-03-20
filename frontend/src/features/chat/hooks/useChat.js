@@ -13,8 +13,9 @@ export const useChat = () => {
         const data = await sendMessage({message, chatId});
         const {chat, aiMessage} = data;
 
-        if(!chat) 
-        dispatch(createNewChat({chatId: chat._id, title: chat.title}));
+        if (!chatId && chat) {
+  dispatch(createNewChat({ chatId: chat._id, title: chat.title }));
+}
         
 
         dispatch(addNewMessage({
