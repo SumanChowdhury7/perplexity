@@ -1,9 +1,11 @@
 import { ChatMistralAI } from "@langchain/mistralai";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
-import { HumanMessage, SystemMessage, AIMessage } from "langchain";
+import { HumanMessage, SystemMessage, AIMessage,tool, createAgent } from "langchain";
+import * as z from "zod";
+import { searchInternet } from "./internet.service.js";
 
 const geminiModel = new ChatGoogleGenerativeAI({
-    model: "gemini-2.5-flash-lite",
+    model: "gemini-flash-latest",
     apiKey: process.env.GEMINI_API_KEY
 });
 
@@ -13,21 +15,50 @@ const mistralModel = new ChatMistralAI({
   temperature: 0,
 });
 
+const searchInternetTool = tool(
+  async ({ query }) => {
+    return await searchInternet(query);
+  },
+  {
+    name: "search_internet",
+    description:
+      "Search the internet for latest information",
+    schema: z.object({
+      query: z.string().describe("Search query")
+    }),
+  }
+);
+
+const agent = createAgent({
+  model: geminiModel,
+  tools: [searchInternetTool],
+  systemPrompt: `
+You are an AI assistant with internet access.
+
+If a question requires latest or real-time information,
+use the "search_internet" tool.
+
+Always summarize the results clearly for the user.
+`
+});
+
 // const agent = createReactAgent({
 //     llm: model,
 //     tools: [emailTool]
 // })
 
 export async function generateResponse(messages) {
-  const response = await geminiModel.invoke(messages.map(msg=>{
-    if(msg.role === "user") {
-      return new HumanMessage(msg.content)
-    } else if(msg.role === "ai") {
-      return new AIMessage(msg.content)
-    }
-  }));
+  const response = await agent.invoke({
+    messages: messages.map(msg => {
+      if (msg.role === "user") {
+        return new HumanMessage(msg.content);
+      } else if (msg.role === "ai") {
+        return new AIMessage(msg.content);
+      }
+      })
+  });
 
-  return response.text;
+  return response.messages[response.messages.length - 1].text;
 }
 
 export async function generateChatTitle(message) {

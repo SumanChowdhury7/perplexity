@@ -5,6 +5,7 @@ import { Menu, X, Send, LogOut } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import remarkGfm from "remark-gfm";
 
 const Dashboard = () => {
   const chat = useChat();
@@ -29,7 +30,6 @@ const Dashboard = () => {
     setChatInput("");
   };
 
-  const chatss = ["jiii", "jlkj", "lkk"];
 
   useEffect(() => {
     chat.initializeSocketConnection();
@@ -59,12 +59,12 @@ const Dashboard = () => {
         </div>
 
         
-        <div className="flex-1 overflow-y-auto px-2">
+        <div className="flex-1 overflow-y-auto px-2 flex flex-col justify-items-start">
           {Object.values(chats).map((chat, i) => (
             <button
             onClick={()=>{openChat(chat.id)}}
               key={i}
-              className="p-3 rounded-xl hover:bg-white/10 cursor-pointer text-sm mb-1 truncate"
+              className="w-full text-left p-3 rounded-xl hover:bg-white/10 cursor-pointer text-sm truncate"
             >
               {chat?.title || "New Chat"}
             </button>
@@ -113,10 +113,10 @@ const Dashboard = () => {
               }`}
             >
               <div
-                className={`max-w-[85%] md:max-w-xl px-4 py-3 rounded-2xl text-sm shadow-lg ${
+                className={`max-w-[85%] md:max-w-xl px-4 py-3 rounded-2xl text-sm  ${
                   msg.role === "user"
                     ? "bg-gradient-to-r from-purple-600 to-blue-500"
-                    : "bg-white/10 backdrop-blur-md"
+                    : "bg-transparent"
                 }`}
               >
                 <ReactMarkdown
@@ -140,6 +140,7 @@ const Dashboard = () => {
                       );
                     },
                   }}
+                  rehypePlugins={[remarkGfm]}
                 >
                   {msg.content}
                 </ReactMarkdown>
